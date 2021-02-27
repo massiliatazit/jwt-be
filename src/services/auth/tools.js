@@ -3,7 +3,7 @@ const User = require("../users/schema");
 const authenticate = async user => {
   try { const newAccessToken = await generateJWT({_id:user._id})
   const newRefreshToken = await generateRefreshJWT({_id:user._id})
-  user.refrechTokens = user.refrechTokens.concat({newRefreshToken})
+  user.refreshTokens = user.refreshTokens.concat({token:newRefreshToken})
   await user.save()
    return {newAccessToken,newRefreshToken}
 
@@ -39,20 +39,20 @@ const refreshToken= async oldRefreshToken =>{
     const decoded = await verifyRefreshToken(oldRefreshToken)
     //check if old refresh token is in DB
     const user = await User.findOne({_id:decoded._id}) 
-    const currentRefreshToken = await user.refrechTokens.find(token=>token.token=== oldRefreshToken)
+    const currentRefreshToken = await user.refreshTokens.find(token=>token.token=== oldRefreshToken)
     if (!currentRefreshToken){ throw new Error("wrong refresh token provided")}
     //if everything is ok we can generate a new access and refresh token
     const newAccessToken = await generateJWT({_id:user._id})
   const newRefreshToken = await generateRefreshJWT({_id:user._id})
   // replace old refresh token with new one in the DB
-  const newRefreshTokensList = user.refrechTokens.filter(token=>token.token !== oldRefreshToken).concat({token:newRefreshToken})
-  user.refrechTokens=[...newRefreshTokensList]
+  const newRefreshTokensList = user.refreshTokens.filter(token=>token.token !== oldRefreshToken).concat({token:newRefreshToken})
+  user.refreshTokens=[...newRefreshTokensList]
   await user.save()
-      
+      return {token:newAccessToken,RefreshToken:newRefreshToken}
   } catch (error) {
       console.log(error)
       
   }
 
 }
-module.exports ={authenticate,verifyJWT}
+module.exports ={authenticate,verifyJWT,refreshToken}

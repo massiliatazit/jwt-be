@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router()
 const UserModel = require("./schema")
 const {adminOnly,authorize}=require('../auth/middleware')
-const {authenticate} = require('../auth/tools')
+const {authenticate,refreshToken} = require('../auth/tools')
 router.get("/",authorize,async(req,res,next)=>{
   //  console.log("user",req.user)
     try {
@@ -65,6 +65,7 @@ router.post("/login",async(req, res, next)=>{
         //check credentials
         const {email,password} =req.body
         const user = await UserModel.findByCredentials(email,password)
+        console.log("here user",user)
         //generate token
         const tokens = await authenticate(user)
         //send back token
@@ -74,14 +75,17 @@ router.post("/login",async(req, res, next)=>{
         
     }
 })
-router.post("/refrechToken",async(req, res, next)=>{
+router.post("/refreshToken",async(req, res, next)=>{
     try {
         //1.Generate token
         const oldRefreshToken = req.body.refreshToken
         //2.verify token
         // 3. if it's ok generate new access token and new refresh token 
-        //4. send the tokens back       
+        const {token,RefreshToken}= await refreshToken(oldRefreshToken)
+        //4. send the tokens back  
+        res.send({token,RefreshToken})     
     } catch (error) {
+        next(error)
         
     }
 })

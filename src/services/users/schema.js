@@ -14,7 +14,7 @@ const UserSchema = new Schema(
     password: { type: String, required: true, minlength: 8 },
     email: { type: String, required: true },
     role: { type: String, required: true, enum: ["admin", "user"] },
-    refrechTokens: [{ token: { type: String } }],
+    refreshTokens: [{ token: { type: String } }],
   },
   { timestamps: true }
 );
