@@ -1,12 +1,19 @@
 const UserModel = require("../users/schema");
 const jwt = require("jsonwebtoken")
+const {verifyJWT} = require("./tools")
 
 
 
 const authorize = async (req, res, next) => {
   try {
-    
+    const token = req.header("Authorization").replace("Bearer ","")
+    const decoded = await verifyJWT(token)
+    const user = await UserModel.findOne({_id:decoded._id})
+    req.user = user
   } catch (error) {
+    const err = new Error(("Authenticate first please!"))
+    err.httpStatusCode = 401
+    next(error)
     
   }
     
@@ -22,6 +29,7 @@ const authorize = async (req, res, next) => {
   }
 module.exports={
    
-    adminOnly: admintest
+    adminOnly: admintest,
+    authorize
 
 }
